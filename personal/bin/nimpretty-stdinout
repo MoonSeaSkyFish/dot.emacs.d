@@ -1,8 +1,15 @@
 #!/bin/perl
 
+##
+## nimpretty を呼び出す処理。
+##
+##  nimprettyは標準入出力に未対応のため(たぶん)
+##  またエラーがあった場合、エラー出力を捨てる
+##
+##
 $| = 1;
 
-$tempDir = "/home/i/tmp/";
+$tempDir = $ENV{HOME} . "/tmp/";
 
 unlink glob($tempDir . "*_TMP.nim");
 
@@ -10,7 +17,7 @@ $f = $tempDir . time() . "_TMP" . ".nim";
 
 open(O, ">" . $f);
 while(<stdin>){
-	print O $_;
+  print O $_;
 }
 close O;
 
@@ -19,6 +26,6 @@ $str = eval "`$cmd`";
 
 open IN, $f;
 while(<IN>){
-	print;
+  print;
 }
 close IN;

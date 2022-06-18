@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: from import
+# key: from
+# --
+from ${1:proc name} import ${2:name}
+$0

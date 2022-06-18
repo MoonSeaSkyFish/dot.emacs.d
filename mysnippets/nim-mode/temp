@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: template
+# key: temp
+# --
+template ${1:name}(${2:args}:${3:type}) =
+  $0

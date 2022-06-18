@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: var int
+# key: vint
+# --
+var $1: int = ${2:0}$0

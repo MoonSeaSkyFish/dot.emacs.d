@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: insert prose header
+# key: #prose
+# --
+#+TITLE: $1
+#+LINK_UP: 
+#+DATE: 
+#+LAST: 
+#+LANGUAGE: ja
+#+OPTIONS: 
+#+STARTUP: 
+#+DESCRIPTION: 
+#+KEYWORDS:
+
+* 登場人物$0
+* 設定
+* プロット
+* 本文

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: when isMainModule
+# key: whmain
+# --
+when isMainModule:
+  $0

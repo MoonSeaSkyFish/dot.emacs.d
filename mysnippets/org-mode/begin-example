@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: insert begin example
+# key: #ex
+# --
+#+BEGIN_EXAMPLE
+$0
+#+END_EXAMPLE

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: discardable proc
+# key: procd
+# --
+proc ${1:name}(${2:args}:${3:type}): ${4:type} {.discardable.} =
+  $0

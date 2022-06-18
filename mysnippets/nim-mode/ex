@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: V
+# key: ex
+# --
+runnableExamples:
+  $0

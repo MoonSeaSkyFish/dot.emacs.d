@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: insert header
+# key: #header
+# --
+#+TITLE: $1
+#+LINK_UP: 
+#+DATE: 
+#+LAST: 
+#+LANGUAGE: ja
+#+OPTIONS: 
+#+STARTUP: 
+#+DESCRIPTION: 
+#+KEYWORDS:
+
+* $0

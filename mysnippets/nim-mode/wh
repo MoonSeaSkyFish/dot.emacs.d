@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: when
+# key: wh
+# --
+when ${1:cond}:
+  $0

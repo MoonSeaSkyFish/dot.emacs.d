@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: var string
+# key: vstr
+# --
+var $1: string = "$2"$0

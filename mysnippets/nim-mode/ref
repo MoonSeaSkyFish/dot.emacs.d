@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ref object
+# key: ref
+# --
+type ${1:name} = ref object
+  $0

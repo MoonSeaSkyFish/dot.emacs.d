@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: japanese drawer
+# key: ;j
+# --
+:JAPANESE:
+$0
+:END:

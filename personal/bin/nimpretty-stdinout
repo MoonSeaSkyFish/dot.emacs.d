@@ -1,0 +1,24 @@
+#!/bin/perl
+
+$| = 1;
+
+$tempDir = "/home/i/tmp/";
+
+unlink glob($tempDir . "*_TMP.nim");
+
+$f = $tempDir . time() . "_TMP" . ".nim";
+
+open(O, ">" . $f);
+while(<stdin>){
+	print O $_;
+}
+close O;
+
+$cmd = "nimpretty --indent:2 $f 2>&1";
+$str = eval "`$cmd`";
+
+open IN, $f;
+while(<IN>){
+	print;
+}
+close IN;

@@ -424,11 +424,6 @@ org-modeで書けば、org書式が使えるから、楽…
 #+END_SRC
  
 **** メニューキー menu-key
-以下、メニュー風キー設定
-現在、<muhenkan>は、f-spaceに割り振っている(alt-hkkbにより)
-右superのほうがよいかなー？
-m-xをふっているけれど f-spc = m-xにするか？
-
 #+BEGIN_SRC emacs-lisp
   (on
     (defvar my/menu-key "<muhenkan>")
@@ -445,15 +440,6 @@ m-xをふっているけれど f-spc = m-xにするか？
 #+END_SRC
 
 *** Mozc
-辞書登録なんかのバインドもほしいかも？
-systemではw-dに割り振っているが...
-- mozc-mode に<henkan>ff,C-xC-f,C-c 0 を振っている(mozc-mode での which-key が表示されない対策)
-
-  ;;mozc-mode中にwhich-keyが働かなくなるので、その対策
-    (define-key mozc-mode-map "\C-x\C-f" 'find-file)
-    (define-key mozc-mode-map (kbd "<henkan>ff") 'find-file)
-    (define-key mozc-mode-map "\C-c0" 'ignore)
-  )
 #+BEGIN_SRC emacs-lisp
   (on
     (setq default-input-method "japanese-mozc")
@@ -471,7 +457,7 @@ systemではw-dに割り振っているが...
         :background "#335577")))
 #+END_SRC
 
-一応、なにか設定しないと、mozcでwhich-keyメニューが表示しない。
+一応、なにか設定しないと、mozc-modeでwhich-keyメニューが表示しない。
 #+BEGIN_SRC emacs-lisp
   (on
     (!after 'mozc

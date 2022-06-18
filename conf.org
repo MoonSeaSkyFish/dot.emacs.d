@@ -113,12 +113,8 @@ or
 
   conf.org saved conf.org -> init.el -> init.elc
 
-my/org-babel-init-file と org-babel-tangle-fileが未定義警告が出るので、中身のないものを先に定義した。
-もっと良いやり方がないのだろうか？
-
 #+BEGIN_SRC emacs-lisp
   (on
-   ;;(require 'org)
    (defun my/org-babel-init-file()
      (interactive)
      (org-babel-tangle-file my/org-init-file-name my/init-file-name)
@@ -416,8 +412,6 @@ org-modeで書けば、org書式が使えるから、楽…
 *** which-key
 #+BEGIN_SRC emacs-lisp
   (on
-    ;;(require 'which-key)
-    ;;(require 'which-key-posframe)
     (!cset
       '(which-key-separator ":")
       '(which-key-prefix-prefix "")
@@ -462,7 +456,6 @@ systemではw-dに割り振っているが...
   )
 #+BEGIN_SRC emacs-lisp
   (on
-    ;;(require 'mozc)
     (setq default-input-method "japanese-mozc")
     (!after 'posframe
       (require 'mozc-cand-posframe)
@@ -485,12 +478,9 @@ systemではw-dに割り振っているが...
       (my/menu-set mozc-mode-map "ff" "開く" #'find-file)))
 #+END_SRC
 
-*** ivy
+*** ivy, counsel, swiper
 #+BEGIN_SRC emacs-lisp
   (on
-    ;;(require 'ivy)
-    ;;(require 'swiper)
-    ;;(require 'counsel)
     (!delay
       (setq-default ivy-use-virtual-buffers t)
       (setq-default ivy-count-format "(%d/%d) ")
@@ -519,7 +509,6 @@ lisp, org-lisp
 *** highlight-indent-guides
 #+BEGIN_SRC emacs-lisp
   (on
-    ;;(require 'highlight-indent-guides)
     (defun my/highlight-indent-guides--bitmap-line (width height _crep zrep)
       (let*
         ((left (/ (- width 2) 2))
@@ -554,7 +543,7 @@ require 不要か
 
 *** smartparens
 
-perl のときに、{が{}}となる原因はなにか？ cperlで自動でしているため
+perl のときに、{が{}}となる原因はなにか？ → cperlで自動で"{"入力時に"}"しているため
 
 #+BEGIN_SRC emacs-lisp
   (on
@@ -576,7 +565,6 @@ perl のときに、{が{}}となる原因はなにか？ cperlで自動でし�
 #+BEGIN_SRC emacs-lisp
   (on
     (!delay
-      ;;(require 'reformatter)
       (reformatter-define nim-format
         :program "~/.emacs.d/personal/bin/nimpretty-stdinout"
         :lighter " DF")

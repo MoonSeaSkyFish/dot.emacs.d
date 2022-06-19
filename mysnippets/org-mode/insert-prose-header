@@ -2,15 +2,15 @@
 # name: insert prose header
 # key: #prose
 # --
-#+TITLE: $1
-#+LINK_UP: 
-#+DATE: 
-#+LAST: 
-#+LANGUAGE: ja
-#+OPTIONS: 
-#+STARTUP: 
-#+DESCRIPTION: 
-#+KEYWORDS:
+#+title: $1
+#+link_up: 
+#+date: 
+#+last: 
+#+language: ja
+#+options: 
+#+startup: 
+#+description: 
+#+keywords:
 
 * 登場人物$0
 * 設定

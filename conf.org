@@ -1,21 +1,55 @@
 #+title: emacs 設定ファイル
+#+date: 2020-06-21T16:44:00Z
+#+last: 2022-07-07T20:11:40Z
+#+startup: showall
 
-* 覚書 
+* 覚書
+xx
+startup
+  content indent hidestar
+  inlineimages fold showall
+
 - 必要なライブラリの調査
-  - yasnippet
-  - company
+  - company ... companyの設定、表示順、表示タイミング、表示タイミングは自動、手動の切り替え可能に。
+    yasnippet中にcompanyが表示されるのは微妙にじゃまか。(tabがおせん)
 - ivy での絞り込みにmigemoが利用したい
-- imenu-list + org-mode の表記がインデントにならないか？
+- imenu-list + org-mode の表記がインデントにならないか？ - 右表示よりは左表示のが見やすいかな
   - org-sidebar なるものもある
-- my/startup-screen の設定
-    
+   
+** 気になるプラグイン
+- vertio - あえてivyから変更する理由はあるのか？
+-
+  
+** どうするか？
+- 自作系プラグイン
+  - my/startup-screen の設定
+  - owl
+  - prose
+  - お気に入りファイル・ディレクトリ
+(leaf 初期設定
+  :config
+  (leaf お気に入り
+    :config
+    (defvar my/rsrc-fav-file-list
+      '(("init.el" "~/.emacs.d/init.el")
+        ("edit favfile" "~/.emacs.d/init.el" "my/rsrc-fav-file-list")
+        ("openbox menu.xml" "~/.config/openbox/menu.xml")
+        ("openbox rc.xml" "~/.config/openbox/rc.xml")
+        ("openbox autostart" "~/.config/openbox/autostart")))
+    (defvar my/rsrc-fav-dir-list
+      '(("pg" "/home/pg/")
+        (".emacs.d" "~/.emacs.d/")
+        ("Templates" "~/Templates"))))
+
 * 最初の処理
+
+lexcal-binding を 利用する
 #+begin_src emacs-lisp
 ;; -*- coding: utf-8; lexical-binding: t -*-
 #+end_src
 
 profiler を利用するときは、profile-procのコメントを入れ替える
-
+profiler利用可不可
 #+begin_src emacs-lisp
   ;;(defmacro profile-proc(&rest lst) `(progn ,@lst))
   (defmacro profile-proc(&optional &rest _lst))
@@ -49,29 +83,31 @@ comp系warningを表示しない
         (list 'locate-user-emacs-file path))))
 #+end_src
 
-
 #+begin_src emacs-lisp
   (add-to-list 'load-path (!ewhen (!emacs.d "personal")))
-  (defconst my/init-file-name (!ewhen (!emacs.d "init.el")))
-  (defconst my/org-init-file-name (!ewhen (!emacs.d "conf.org")))
+  (add-to-list 'load-path (!ewhen (!emacs.d "lisp")))
+  (defconst my/init-file-name (!ewhen (!emacs.d "my/my-init.el")))
+  (defconst my/org-init-file-name (!ewhen (!emacs.d "my/conf.org")))
 #+end_src
 
-既存のグローバルマップの保存
-#+begin_src emacs-lisp
-  (defvar def-global-map (copy-keymap global-map))
-#+end_src
-
-
-* なぞマクロとなぞ関数
+* 自作マクロ・関数
 引数を _ で始めた場合、未使用警告エラーが抑制される。
 on はそのまま展開。offはなにも展開しない。
-
+on/offマクロなどの宣言
 #+begin_src emacs-lisp
   (defmacro on(&rest lst) `(progn ,@lst))
   (defmacro off(&optional &rest _lst))
   (defmacro install-off(&optional &rest _lst))
   (defmacro install-on(&rest lst) `(progn ,@lst))
 #+end_src
+
+拡張子のみ変更
+#+begin_src emacs-lisp
+  (defmacro my/change-ext(fn ext)
+    "拡張子を変更して返す。引数の拡張子に .は不要。"
+    (list 'concat (list 'file-name-sans-extension fn) "." ext))
+#+end_src
+
 
 ** 疑似非同期関数
 参考URL:
@@ -136,8 +172,26 @@ conf.orgをすぐよむためのコマンド。
       (find-file my/org-init-file-name)))
 #+end_src
 
+* ライブラリ
+
+** 外部
+*** cl-lib
+#+begin_src emacs-lisp
+  (on (require 'cl-lib))
+#+end_src
+
+*** posframe
+#+begin_src emacs-lisp
+  (on (require 'posframe))
+#+end_src
+
+
+** 自作
+
+
 * インストールするパッケージ
 install-on に変更して、バイトコンパイルすると、インストールがはじまる。
+:PROPERTIES:
 #+begin_src emacs-lisp
   (install-off
     (!ewhen
@@ -146,20 +200,21 @@ install-on に変更して、バイトコンパイルすると、インストー
         '(("org"   . "https://orgmode.org/elpa/")
            ("melpa" . "https://melpa.org/packages/")
            ("gnu"   . "https://elpa.gnu.org/packages/")))
-      (off (package-refresh-contents)) ;;たまにはrefreshしませう
+      (on (package-refresh-contents)) ;;たまにはrefreshしませう
       (package-initialize)
       (setq my/favorite-packages
         '(
            profiler
            ;;use-package
-           ivy
-           swiper
-           counsel
+           ivy swiper counsel
+           fussy
+           vertico consult orderless
+           projectile ;;プロジェクト管理
            ;;elscreen
            ;;japanese-holidays
            ;;recentf-ext
-           ;;magit
-           ;;eacl
+           magit
+           ;;eacl  ;;git-completeと同じgit管理下のプロジェクト保管エンジン
            ;;auto-complete
            migemo
            ddskk
@@ -175,7 +230,7 @@ install-on に変更して、バイトコンパイルすると、インストー
            nim-mode
            lsp-mode
            typescript-mode
-           ;;lua-mode
+           lua-mode
            ;;----
            posframe
            ;;----- 
@@ -184,7 +239,7 @@ install-on に変更して、バイトコンパイルすると、インストー
            mozc-cand-posframe
            ;;-----
            rainbow-delimiters
-           company ;;company-box
+           company company-box
            yasnippet
            yasnippet-snippets
            ivy-yasnippet
@@ -193,21 +248,25 @@ install-on に変更して、バイトコンパイルすると、インストー
            highlight-indent-guides
            expand-region
            imenu-list
+           auto-dim-other-buffers
            ;;hydra
            ;;neotree
            ;;treemacs
-           ;;multiple-cursors
+           multiple-cursors
            ;;pangu-spacing
            ;;dashboard
            ;;indent-guide
-           ;;quickrun
+           quickrun
            vterm
            reformatter
+           evil
            ;; - org-mode 関連 -
            org-bullets
            ;;org-drill org-journal
            ;;ox-hugo
            ob-nim
+           org-sidebar
+           org-roam
            ))
       ;;インストールする
       (dolist (package my/favorite-packages)
@@ -215,7 +274,7 @@ install-on に変更して、バイトコンパイルすると、インストー
         (unless (package-installed-p package)
           (package-install package)))))
 #+end_src
-
+:END:
 * 通常設定
 
 ** emacs-server
@@ -228,6 +287,28 @@ install-on に変更して、バイトコンパイルすると、インストー
 #+begin_src emacs-lisp
   (on
     (setq my/changelog-filename "~/txt/change.log"))
+#+end_src
+
+*** お気に入りファイル
+rsrcは何の略なのだろう？
+#+begin_src emacs-lisp
+  (on
+    (defvar my/rsrc-fav-file-list
+      '(("early-init.el" "~/.emacs.d/early-init.el")
+         ("edit favfile" "~/.emacs.d/conf.org" "my/rsrc-fav-file-list")
+         ("qmk qtea" "~/qmk_firmware/keyboards/hhkb/ansi/keymaps/qtea/keymap.c")
+         ("openbox menu.xml" "~/.config/openbox/menu.xml")
+         ("openbox rc.xml" "~/.config/openbox/rc.xml")
+         ("openbox autostart" "~/.config/openbox/autostart"))))
+#+end_src
+
+*** お気に入りディレクトリ
+#+begin_src emacs-lisp
+  (on
+    (defvar my/rsrc-fav-dir-list
+      '(("pg" "/home/pg/")
+         (".emacs.d" "~/.emacs.d/")
+         ("Templates" "~/Templates"))))
 #+end_src
 
 ** いろいろ設定
@@ -275,6 +356,12 @@ org-modeで書けば、org書式が使えるから、楽…
     (setq echo-keystrokes 0.1))
 #+end_src
 
+60sec入力なければガベージコレクトする。
+#+begin_src emacs-lisp
+  (on (run-with-idle-timer 60.0 t #'garbage-collect));
+#+end_src
+
+
 ** スクロール
 #+begin_src emacs-lisp
   (on
@@ -289,9 +376,9 @@ org-modeで書けば、org書式が使えるから、楽…
     (fringe-mode (cons 10 3))
     (setq-default indicate-empty-lines t)
     (setq-default mode-line-format 
-      (list mode-line-mule-info mode-line-modified " %b " "[%l:%C] " mode-line-modes)))
+      (list mode-line-mule-info mode-line-modified " %b (%m) [%l:%C]")))
 #+end_src
-
+mode-line-modes
 ** カーソル
 #+begin_src emacs-lisp
   (on
@@ -354,18 +441,20 @@ org-modeで書けば、org書式が使えるから、楽…
    (set-face-foreground 'isearch-fail "#ff0000"))
 #+end_src
 
-* ライブラリ
+* マイナーモード
 
-** 外部
-*** posframe
+** 自作その１ - 他のパッケージに依存しないが、マイナーモード等で必要になるかも
+*** mykeys
+#+begin_src emacs-lisp
+  (on (require 'my-keys)  (my/keys 1))
+#+end_src
+*** 自作関数
 #+begin_src emacs-lisp
   (on
-    (require 'posframe))
+    (defun my/other-window-find-file(fn)
+      (other-window 1)(find-file fn)))
 #+end_src
 
-** 自作
-
-* マイナーモード
 ** 標準
 *** whitespace
 タブのみ表示
@@ -411,6 +500,15 @@ org-modeで書けば、org書式が使えるから、楽…
 #+begin_src emacs-lisp
 #+end_src
 
+*** recentf
+  (leaf recentf
+    :custom
+    ((recentf-max-saved-items . 1000)
+     (recentf-exclude . '("recentf\\'" "\\.org\\'" ".+\\.owl\\'" )))
+    :commands recentf-mode
+    :config
+    (recentf-mode))
+
 ** 外部
 *** which-key
 #+begin_src emacs-lisp
@@ -428,18 +526,21 @@ org-modeで書けば、org書式が使えるから、楽…
  
 **** メニューキー menu-key
 #+begin_src emacs-lisp
-  (on
-    (defvar my/menu-key "<muhenkan>")
-    (defmacro my/menu-group(key desc)
-      (list 'which-key-add-key-based-replacements
-        (list 'concat my/menu-key key) desc))
-    (defmacro my/menu-set (map key desc cmd)
-      (list 'progn
-        (list 'define-key map
-          (list 'kbd (list 'concat my/menu-key key)) cmd)
-        (list 'my/menu-group key desc)))
-    (defmacro my/g-menu-set (key desc cmd)
-      (list 'my/menu-set 'global-map key desc cmd)))
+   (on
+     (defvar my/menu-key "<muhenkan>")
+     (defmacro my/menu-group(key desc)
+       (list 'which-key-add-key-based-replacements
+         (list 'concat my/menu-key key) desc))
+     (defmacro my/menu-set (map key desc cmd)
+       (list 'progn
+         (list 'define-key map
+           (list 'kbd (list 'concat my/menu-key key)) cmd)
+         (list 'my/menu-group key desc)))
+     (defmacro my/g-menu-set (key desc cmd)
+       (list 'progn
+         (list 'my/define-key 
+           (list 'kbd (list 'concat my/menu-key key)) cmd)
+         (list 'my/menu-group key desc))))
 #+end_src
 
 *** Mozc
@@ -467,14 +568,47 @@ org-modeで書けば、org書式が使えるから、楽…
     (!after 'mozc
       (my/menu-set mozc-mode-map "ff" "開く" #'find-file)))
 #+end_src
-aaaafdsafsfasfsa
+
+*** imenu-list
+#+begin_src emacs-lisp 
+    (on
+      (!cset '(imenu-list-position 'left)
+        '(imenu-list-size 0.15)
+      ))
+#+end_src
+
+
 *** ivy, counsel, swiper
+
+vetico との違いは？
+
 #+begin_src emacs-lisp
   (on
     (!delay
       (setq-default ivy-use-virtual-buffers t)
       (setq-default ivy-count-format "(%d/%d) ")
       (ivy-mode 1)))
+#+end_src
+
+*** verticom, consult, orderless
+installed       
+vertico consult orderless
+           
+           
+*** fussy
+installed native fzf
+
+*** projectile
+プロジェクト管理
+#+begin_src emacs-lisp
+  (off (require 'projectile)) 
+#+end_src
+
+*** multiple-curso
+#+begin_src emacs-lisp
+  (on  
+    (my/define-key (kbd "C->") 'mc/mark-next-like-this)
+    (my/define-key (kbd "C-<") 'mc/mark-previous-like-this))
 #+end_src
 
 *** rainbow-delimiters
@@ -512,8 +646,20 @@ lisp, org-lisp
       'my/highlight-indent-guides--bitmap-line)
     (setq-default highlight-indent-guides-method 'bitmap)
     (add-hook 'nim-mode-hook 'highlight-indent-guides-mode)
+    (add-hook 'cperl-mode-hook 'highlight-indent-guides-mode)
+    (add-hook 'python-mode-hook 'highlight-indent-guides-mode)
     (add-hook 'emacs-lisp-mode-hook 'highlight-indent-guides-mode))  
 #+end_src
+
+*** auto-dim-other-buffers - 使ってないbufferの色を変える
+#+begin_src emacs-lisp
+  (off
+    (!delay
+      (require 'auto-dim-other-buffers)
+      (set-face-attribute 'auto-dim-other-buffers-face nil :background "#112")
+      (auto-dim-other-buffers-mode t)))
+#+end_src
+
 
 *** ! lsp
 require 不要か
@@ -537,8 +683,9 @@ perl のときに、{が{}}となる原因はなにか？ → cperlで自動で"
 
 #+begin_src emacs-lisp
   (on
-    (!ewhen
-      (require 'smartparens-config)
+    (require 'smartparens-config)
+    ;;(autoload 'nim-mode "smartparens-config" nil t)
+    (!ewhen  
       (require 'cperl-mode))
     (!eand
       (add-hook 'nim-mode-hook
@@ -571,7 +718,8 @@ perl のときに、{が{}}となる原因はなにか？ → cperlで自動で"
 
 *** migemo
 migemo-init で require必要
-というか、どこでつかってるんだ？ searchか。searchだね。
+isearch -> swiper に変更したため現在不要。
+swiper や ivy で利用可能にしたい。
 #+begin_src emacs-lisp
   (on
     (autoload 'migemo-init "migemo")
@@ -584,18 +732,73 @@ migemo-init で require必要
     (!delay (migemo-init)))
 #+end_src
 
-*** ? yasnippet
+◆ ivy migemo
 #+begin_src emacs-lisp
   (on
-    (setq yas-snippet-dirs
-      `(,(!ewhen (!emacs.d "mysnippets"))
-         ,(!ewhen (!emacs.d "snippets")))))
+    (require 'ivy-with-migemo)
+    (global-ivy-with-migemo-mode t)
+    )
 #+end_src
 
-*** ?? company
+
+*** yasnippet
+
+(leaf ivy-yasnippet
+    :ensure t
+    :after (yasnipetts ivy)
+    ))
+ 
 #+begin_src emacs-lisp
-  (off (require 'company))
+  (on
+    (autoload 'yas-expand "yasnippet" nil t)
+    (autoload 'yas-minor-mode "yasnippet" nil t)
+    (setq yas-snippet-dirs
+      `(,(!ewhen (!emacs.d "mysnippets"))
+         ,(!ewhen (!emacs.d "snippets"))))
+    (add-hook 'org-mode-hook  #'(lambda()(run-at-time "1 sec" nil #'yas-minor-mode)))
+    (add-hook 'nim-mode-hook #'yas-minor-mode))
 #+end_src
+   ((yas-after-exit-snippet-hook 
+      '(lambda() ;;変換後に余計な改行が付加されるため強引に消す処理をしている。動作が微妙だが仕方があるまい。
+         (save-excursion
+           (if (string= (buffer-substring (- yas-snippet-end 1) yas-snippet-end) "\n")
+               (progn (goto-char yas-snippet-end)(delete-forward-char 1)))))))
+ 
+*** ?? company
+
+(company-transformers . '(company-sort-by-occurrence))
+↑sort company-sort-by-occurrence / company-occurrence-weight-function /
+       company-sort-by-backend-importance / company-sort-prefer-same-case-prefix
+
+#+begin_src emacs-lisp
+  (on (!ewhen (require 'company)))
+  (on
+    (!after 'company
+      (!cset
+        '(company-idle-delay  0)
+        '(company-minimum-prefix-length  1)
+        '(company-selection-wrap-around  t)
+        '(company-transformers  '(company-sort-by-occurrence))
+        '(company-dabbrev-downcase  nil))
+      (add-hook 'company-mode-hook #'company-box-mode)
+      (set-face-attribute 'company-tooltip nil
+        :foreground "black" :background "lightgrey")
+      (set-face-attribute 'company-tooltip-common nil
+        :foreground "black" :background "lightgrey")
+      (set-face-attribute 'company-tooltip-common-selection nil
+        :foreground "white" :background "steelblue")
+      (set-face-attribute 'company-tooltip-selection nil
+        :foreground "black" :background "steelblue")
+      (set-face-attribute 'company-preview-common nil
+        :background nil :foreground "lightgrey" :underline t)
+      (set-face-attribute 'company-scrollbar-fg nil
+        :background "orange")
+      (set-face-attribute 'company-scrollbar-bg nil
+        :background "gray40")
+      (define-key company-active-map [tab] 'yas-expand)))
+#+end_src
+
+    ;(add-to-list 'company-backends 'company-yasnippet)
 
 *** ! expand-region
 #+begin_src emacs-lisp
@@ -604,11 +807,35 @@ migemo-init で require必要
 #+end_src
 
 
-** 自作
+** 自作その２ - 他のパッケージ依存があるかもしれないマイナーモード系
 - TODO
-  - hiragana-mode ... skkの漢字変換ないやつ define-key hiragana-mode-map でいけるんじゃね？
+  - 
 #+begin_src emacs-lisp
+  (on
+    (autoload 'my/time-stamp "my-timestamp" nil t)
+    (add-hook 'before-save-hook 'my/time-stamp)
+    (require 'my-ivy-extend))
 #+end_src
+
+*** 簡単quickrun
+vterm 必須
+#+begin_src emacs-lisp
+  (on
+    (defun my/quickrun ()
+      (interactive)
+      (let ((cmd nil) (fn buffer-file-name))
+        (cond
+          ((eq major-mode 'cperl-mode) (setq cmd "perl"))
+          ((eq major-mode 'perl-mode) (setq cmd "perl"))
+          ((eq major-mode 'nim-mode) (setq cmd "nim c -r"))
+          ((eq major-mode 'qmk-mode) (setq cmd "qmk compile -kb hhkb/ansi -km qtea") (setq fn ""))
+          ((eq major-mode 'python-mode) (setq cmd "python")))
+        (if cmd
+          (my/vterm-cd-cmd default-directory (concat cmd " " fn))))))
+#+end_src
+
+*** line-processor
+(leaf my-line-processor :require t)  
 
 
 * メジャーモード
@@ -623,24 +850,43 @@ migemo-init で require必要
 *** perl
 #+begin_src emacs-lisp
   (on
-    (defalias 'perl-mode 'cperl-mode))
+    (autoload 'cperl-mode "cperl-mode" nil t)
+    (defalias 'perl-mode 'cperl-mode)
+    (add-hook 'cperl-mode-hook #'company-mode)
+    (!after 'cperl-mode
+    (my/menu-set cperl-mode-map "cc" "Perl Run" #'my/quickrun)))
 #+end_src
 
+*** python
 #+begin_src emacs-lisp
+    (on
+      (!ewhen (require 'python))
+      (autoload 'python-mode "python" nil t)
+      (!after 'python
+        (my/menu-set python-mode-map "cc" "Python Run" #'my/quickrun)
+        (setq-default python-indent-offset 2)))
 #+end_src
 
 ** 外部
 *** ! treemacs
 #+begin_src emacs-lisp
 #+end_src
+
 *** ! magit
+
+installed magit
 #+begin_src emacs-lisp
 #+end_src
+
 *** vterm
 いろとか、そのあたりで。
 #+begin_src emacs-lisp
   (on
     (!ewhen (require 'vterm))
+    (autoload 'vterm-send-string  "vterm" nil t)
+    (autoload 'my/vterm-sendline  "vterm" nil t)
+    (autoload 'my/vterm-cd-cmd  "vterm" nil t)
+    (autoload 'my/vterm-sendcmd  "vterm" nil t)
     (defalias 'vtx 'vterm-other-window)
     (!after 'vterm
       (setq-default vterm-max-scrollback  10000)
@@ -653,28 +899,29 @@ migemo-init で require必要
       (set-face-foreground 'vterm-color-cyan    "#ce5c00")  ;; 6
       (set-face-foreground 'vterm-color-white   "#babdb9")  ;; 7
       (set-face-background 'vterm-color-black   "#555753")  ;; 8
-      (set-face-background 'vterm-color-red     "#EF2929")  ;;9
-      (set-face-background 'vterm-color-green   "#8AE234")  ;;10
-      (set-face-background 'vterm-color-yellow  "#FCE94F")  ;;11
-      (set-face-background 'vterm-color-blue    "#729FCF")  ;;12
-      (set-face-background 'vterm-color-magenta "#AD7FA8")  ;;13
+      (set-face-background 'vterm-color-red     "#ef2929")  ;;9
+      (set-face-background 'vterm-color-green   "#8ae234")  ;;10
+      (set-face-background 'vterm-color-yellow  "#fce94f")  ;;11
+      (set-face-background 'vterm-color-blue    "#729fcf")  ;;12
+      (set-face-background 'vterm-color-magenta "#ad7fa8")  ;;13
       (set-face-background 'vterm-color-cyan    "#fcaf3e")  ;;14
-      (set-face-background 'vterm-color-white   "#EEEEEC")  ;;15
-      (!eand
-        (define-key vterm-mode-map (kbd "C-b") 'switch-to-buffer)
-        (define-key vterm-mode-map (kbd "C-w") 'other-window)
-        (defun my/vterm-sendline (str)
-          (vterm-send-string (concat str "\n")))
-        (defun my/vterm-sendcmd (str)
-          (switch-to-buffer-other-window "*vterm*")
-          (my/vterm-sendline str) )
-        (defun my/vterm-cd-bufferdir ()
-          (interactive)
-          (my/vterm-sendcmd (concat "cd " default-directory)))
-        (defun my/vterm-cd-cmd (dir cmd)
-          (vterm-other-window)
-          (my/vterm-sendline (concat "cd " dir))
-          (my/vterm-sendline cmd)))))
+      (set-face-background 'vterm-color-white   "#eeeeec")  ;;15
+      (define-key vterm-mode-map (kbd "C-b") 'switch-to-buffer)
+      (define-key vterm-mode-map (kbd "C-w") 'other-window)
+      (push (list "my/other-window-find-file" 'my/other-window-find-file) vterm-eval-cmds)
+      (defun my/vterm-sendline (str)
+        (vterm-send-string (concat str "\n")))
+      (defun my/vterm-sendcmd (str)
+        (switch-to-buffer-other-window "*vterm*")
+        (my/vterm-sendline str) )
+      (defun my/vterm-cd-bufferdir ()
+        (interactive)
+        (my/vterm-sendcmd (concat "cd " default-directory)))
+      (defun my/vterm-cd-cmd (dir cmd)
+        (vterm-other-window)
+        (my/vterm-sendline (concat "cd " dir))
+        (my/vterm-sendline cmd))
+      ))
 #+end_src
 
 *** nim-mode
@@ -683,9 +930,13 @@ migemo-init で require必要
     (!ewhen (require 'nim-mode))
     (!after 'nim-mode
       (add-hook 'nim-mode-hook #'lsp)
+      (add-hook 'nim-mode-hook #'company-mode)
       (add-hook 'nim-mode-hook #'nim-format-on-save-mode)))
 #+end_src
-
+   ((vterm-mode-map
+      ("C-b" . switch-to-buffer)
+      ("C-w" . other-window))))
+ 
 空行の次の行はインデントしない。
 インデント解除が面倒なので。
 ソースがつまり気味になりそう。
@@ -739,9 +990,6 @@ vterm用拡張
               (setq loop nil)))
           (if find dir nil)))
       (!eand
-        (defun my/nim-compile ()
-          (interactive)
-          (my/vterm-cd-cmd default-directory (concat "nim c -r " buffer-file-name)))
         (defun my/nim-build ()
           (interactive)
           (let ((dir (my/find-nimblefile default-directory)))
@@ -750,7 +998,7 @@ vterm用拡張
               (message "not found nimblefile."))))
         (define-key nim-mode-map (kbd "<f5>") 'my/nim-compile)
         (define-key nim-mode-map (kbd "<f6>") 'my/nim-build)
-        (my/menu-set nim-mode-map "cc" "nim c -r    " 'my/nim-compile)
+        (my/menu-set nim-mode-map "cc" "nim c -r " #'my/quickrun)
         (my/menu-set nim-mode-map "cb" "nimble build" 'my/nim-build))))
 #+end_src
    
@@ -800,10 +1048,19 @@ vterm用拡張
 #+begin_src emacs-lisp
 #+end_src
 
+*** 簡単いろいろモード
+#+begin_src emacs-lisp
+(on
+  (define-derived-mode qmk-mode c-mode "qmk"
+    "Major mode for edit qmk."
+    (my/menu-set qmk-mode-map "cc" "qmk" #'my/quickrun)))
+#+end_src
 
 * org-mode 用
 #+begin_src emacs-lisp
   (on
+    (defvar my/orgdir "/home/text/org/")
+    (defvar my/org-diary-dir (!ewhen (expand-file-name "diary" my/orgdir)))
     (setq-default org-startup-truncated nil)
     (setq-default org-startup-indented t)
     (setq-default org-level-color-stars-only nil)
@@ -811,9 +1068,27 @@ vterm用拡張
     (setq-default org-hide-leading-stars t))
 #+end_src
 
+** org用自作ミニプラグイン集
+▼俺日記
+#+begin_src emacs-lisp
+  (on
+    (!after 'org
+      (defun my/diary-grumble-template ()
+        "ぼやきテンプレ - 時刻のみのテンプレがないため"
+        (format-time-string "- [%02H:%02M] %?"))
+      (defun my/diary-org-file ()
+        "日記ファイル名を返す、なきゃつくる。shellでリダイレクトしてがんばる"
+        (let ((f (expand-file-name  (format-time-string "%Y-%02m-%02d.org") my/org-diary-dir )))
+          (if (not (file-exists-p f))
+      (shell-command-to-string 
+         (concat "echo '#+TITLE: " (format-time-string "%Y年%02m月%02d日 （%a）'")" > " f
+           ";echo '* Diary' >>" f ";echo '* Grumble' >>" f))) f))))
+#+end_src
+
 ** coloring
 #+begin_src emacs-lisp
   (on
+    (defvar my/orgfont "Ricty-12")
     (!after 'org
       (set-face-attribute 'org-level-1 nil :bold nil :foreground "#b58900")
       (set-face-attribute 'org-level-2 nil :bold nil :foreground "#dc322f")
@@ -823,23 +1098,29 @@ vterm用拡張
       (set-face-attribute 'org-level-6 nil :bold nil :foreground "#cb4b16")
       (set-face-attribute 'org-level-7 nil :bold nil :foreground "#2aa198")
       (set-face-attribute 'org-level-8 nil :bold nil :foreground "#859900")
-      (set-face-attribute 'org-block-begin-line nil :bold nil :foreground "#909090")
-      (set-face-attribute 'org-block nil    :bold nil :foreground "#aaffee")
-      (set-face-attribute 'org-block-end-line   nil :bold nil :foreground "#909090")
-      (set-face-attribute 'org-meta-line  nil  :bold nil :foreground "#90aa90")
+      (set-face-attribute 'org-block-begin-line nil :family my/orgfont :bold nil :foreground "#909090")
+      (set-face-attribute 'org-block nil  :family my/orgfont :bold nil :foreground "#aaffee")
+      (set-face-attribute 'org-block-end-line  nil :family my/orgfont :bold nil :foreground "#909090")
+      (set-face-attribute 'org-meta-line  nil :family my/orgfont :bold nil :foreground "#90aa90")
       (set-face-attribute 'org-document-info  nil :bold nil :foreground "#90aa90")
-      (set-face-attribute 'org-document-info-keyword nil
+      (set-face-attribute 'org-document-info-keyword nil :family my/orgfont
         :bold nil :foreground "#90aa90")
       (set-face-attribute 'org-document-title nil
         :bold t :foreground "orange" :height 150)
-      (set-face-attribute 'org-table  nil  :bold nil :foreground "#ffccaa")))
+      (set-face-attribute 'org-table  nil :family my/orgfont :bold nil :foreground "#ffccaa")))
 #+end_src
 
 ** org-capture
+
+Poicとか？
+ちょっとしたアイディアとか
+
 #+begin_src emacs-lisp
   (on
+    (add-hook 'org-capture-mode-hook #'(lambda () (setq-local header-line-format nil)))
     (setq-default org-capture-templates
       '(
+      ;;   ("m" "モーニング・ページ" )
          ("d" "おれの日記" entry (file+headline my/diary-org-file "Diary") "** %?")
          ("g" "ぼやき" item (file+headline my/diary-org-file "Grumble")
            (function my/diary-grumble-template)))))
@@ -848,7 +1129,68 @@ vterm用拡張
 #+begin_src emacs-lisp
 #+end_src
 
+▼ 保存ファイル: 0000-poic.org [[file:~/orgwiki/0000-poic.org][PoiC保存]]
+下記はやめて、ひとつで管理するように変更
+- record     - 記録 - 0000-record.org
+- discovery  - 発見 - 0000-discovery.org
+- GTD               - 0000-gtd.org
+- reference  - 参照 - 0000-refernce.org
+ 
+  (setq org-capture-templates '(
+    ("t" "呟き" entry
+     (file+headline "~/orgwiki/0000-poic.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S>\t:TWEET:\n%?"
+    )
+    ("d" "発見" entry
+     (file+headline "~/orgwiki/0000-poic.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S>\t:DISCOVERY:\n** %?"
+    )
+    ("r" "記録" entry
+     (file+headline "~/orgwiki/0000-poic.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S>\t:RECORD:\n** %?"
+    )
+    ("s" "参照" entry
+     (file+headline "~/orgwiki/0000-poic.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S>\t:REFERENCE:\n:PROPERTIES:\n:Media: \n:END:\n%?"
+    )
+    ("g" "GTD" entry
+     (file+headline "~/orgwiki/0000-poic.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S>\t:GTD:\n** TODO %?"
+    )
+    ("z" "SandBox" entry
+     (file+headline "~/orgwiki/0000-sandbox.org" "PoiC")
+      "* %<%Y-%m-%d (%a) %H:%M:%S> %?"
+    )
+  ))
+
+  (defvar my/orgcapture-template
+  '(
+    ("Memo - org capture "
+     :template ("m" "Memo" entry (file+datetree mymemofilename)
+                "* %T\n%?")
+     )
+    ("Linux Diary - org capture "
+     :template ("l" "Linux Diary" entry (file+datetree "~/org/linux-diary.org.txt")
+                "* %T\n** %?")
+     )
+    ("Idea - org capture"
+     :template ("i" "Idea" entry (file+datetree mymemofilename)
+                "* %T\t\t:IDEA:\n%?")
+     )
+    ("Todo File - org capture"
+     :template ("f" "Todo File" entry (file+headline mytasksfilename "Tasks")
+                "* TODO [[file:%F][%f]] %?\n")
+     )
+    ("Todo Normal - org capture"
+     :template ("t" "Todo Normal" entry (file+headline mytasksfilename "Tasks")
+                "* TODO %?\n")
+     )
+))
+
+
+
 ** org extends
+✚ ✔  
 #+begin_src emacs-lisp
   (on
     (!after 'org
@@ -857,6 +1199,7 @@ vterm用拡張
    ;(require 'ob-nim)
    ))
 #+end_src
+
 
 * キーバインド
 
@@ -875,58 +1218,89 @@ vterm用拡張
 - mode-specific-map  はC-cに続く文字用です．
 
 mode-specific-map はあとから中身が入ることはないようだ。なので、あとからwhich-keyで表示不可
+
+** aaaaaaaaaaa
   
 ** グローバルキーバインド
+
+sample - シンボルとキーを入れ替える
+  (keyboard-translate ?\C-x 'control-x) ;;keyboard-translate from to
+  (keyboard-translate ?\C-c 'control-c) ;;quoted-insertでは^@と挿入
 
 - use-global-map keymap ... keymapをグローバルマップにする
 - current-global-map ... カレントグローバルマップを返す 
 - copy-keymap keymap ... コピー 
 
+- klnpty nomap
+- abcdefghijorumqz maping
+- h? u?  mapng
+- 他のものにマッピングしないほうが良さ気なキー: i(tab), m(enter)
+- どうないするか悩ましいキー: j, u, h
+- カットやジャンプの単位は？
+  - 1文字、単語、１行、今の所から行末、今のところから行頭,ファイルの先頭、ファイルの末尾
+  - 関数単位
+  - "",'',(),[],{},<>の中、外
+ 
 #+begin_src emacs-lisp
   (on
-    (global-set-key [henkan] #'toggle-input-method)
-    (keyboard-translate ?\C-x 'control-x) ;;keyboard-translate from to
-    ;;;;(global-set-key "\C-l" #'kill-region)
-    ;;;(keyboard-translate ?\C-x ?\C-l) ;;keyboard-translate from to
-    (keyboard-translate ?\C-c 'control-c) ;;quoted-insertでは^@と挿入
+    (my/define-key [henkan] #'toggle-input-method)
+    ;;(my/define-key (kbd "C-a") #'switch-to-buffer) ;;home
+    (my/define-key (kbd "C-b") #'switch-to-buffer)
+    (my/define-key (kbd "C-c") #'kill-ring-save) ;; ----- C-c copy !! -----
+    ;;(my/define-key (kbd "C-d") #'switch-to-buffer) ;;del
+    ;;(my/define-key (kbd "C-e") #'kill-ring-save) ;;end
+    (my/define-key (kbd "C-f") #'swiper)
+    ;;(my/define-key (kbd "C-g") #'ab) ;;abort?
+    ;;(my/define-key (kbd "C-h") #'ignore)
+    ;;(my/define-key (kbd "C-i") #'ab) ;;tab
+    ;;(my/define-key (kbd "C-j") #'ignore)
+    (my/define-key (kbd "C-k") #'ignore)
+    (my/define-key (kbd "C-l") #'ignore)
+    ;;(my/define-key (kbd "C-m") #'ignore)
+    (my/define-key (kbd "C-n") #'ignore)
+    (my/define-key (kbd "C-o") #'find-file)
+    (my/define-key (kbd "C-p") #'ignore)
+    (my/define-key (kbd "C-q") (my/dynamic-binding "C-c")) ;; C-c remap
+    (my/define-key (kbd "C-r") #'query-replace)
+    (my/define-key (kbd "C-s") #'save-buffer)
+    (my/define-key (kbd "C-t") #'ignore)
+    ;;(my/define-key (kbd "C-u") #'ignore)
+    (my/define-key (kbd "C-v") #'yank)
+    (my/define-key (kbd "C-w") #'other-window)
+    (my/define-key (kbd "C-x") #'kill-region) ;; ----- C-x cut !! -----
+    (my/define-key (kbd "C-y") #'ignore)
+    (my/define-key (kbd "C-z") #'undo)
+    (my/define-key (kbd "C-=") #'er/expand-region)
+    ;; 記号
+    (my/define-key (kbd "C-/") #'ignore)
 
-    (global-set-key [control-x] #'kill-region)
-    (global-set-key [control-c] #'kill-ring-save)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
+    ;; (my/define-key (kbd "C-") #'ignore)
 
-    (global-set-key (kbd "C-l") ctl-x-map) ;;どこにふるか？
-
-    (global-set-key "\C-v" #'yank)
-    (global-set-key "\C-s" #'save-buffer)
-    (global-set-key "\C-o" #'find-file)
-    (global-set-key "\C-f" #'swiper)
-    (global-set-key (kbd "C-S-f") #'isearch-backward)
-    (global-set-key "\C-r" #'query-replace)
-    (global-set-key "\C-b" #'switch-to-buffer)
-    (global-set-key "\C-w" #'other-window)
-    (global-set-key "\C-z" #'undo)
-    (global-set-key "\C-n" #'ignore)
-    (global-set-key "\C-k" #'ignore)
-    ;;(global-set-key "\C-l" #'ignore)
-    (global-set-key "\C-t" #'ignore)
-    (global-set-key "\C-p" #'ignore)
-    (global-set-key "\C-y" #'ignore)
-    (global-set-key (kbd "C-/") #'ignore)
-    (global-set-key "\M-w" #'ignore)
+    (my/define-key (kbd "C-S-f") #'isearch-backward)
+    (my/define-key "\M-w" #'ignore)
 
     ;; p q t n y ;; たくさんprefix-keyつくっても意味はないんじゃないか
-    (define-prefix-command 'ctl-p-map)
-    (define-prefix-command 'ctl-q-map)
-    (define-prefix-command 'ctl-t-map)
-    (define-prefix-command 'ctl-n-map)
-    (define-prefix-command 'ctl-y-map)
-    (global-set-key "\C-p" #'ctl-p-map) ;;
-    (global-set-key "\C-q" #'ctl-q-map) ;; その他
-    (global-set-key "\C-t" #'ctl-t-map) ;; 削除系
-    (global-set-key "\C-n" #'ctl-n-map) ;; カット系
-    (global-set-key "\C-y" #'ctl-y-map) ;; コピー系
-    ) ;; end on
+    ;;(define-prefix-command 'ctl-p-map)
+    ;;(define-prefix-command 'ctl-t-map)
+    ;;(define-prefix-command 'ctl-n-map)
+    ;;(define-prefix-command 'ctl-y-map)
+    ;(-key "\C-p" #'ctl-p-map) ;;
+    ;;(my/define-key "\C-t" #'ctl-t-map) ;; 削除系
+    ;;(my/define-key "\C-k" #'ctl-n-map) ;; カット系
+    ;;(my/defin-key "\C-y" #'ctl-y-map) ;; コピー系
+    ;;(my/defin-key "\C-n" #'ctl-y-map)ジャンプ系
 
+
+    ) ;; end on
 #+end_src
+
+*** aaaaaaaaa
 
 ** メニューキーバインド
 *** 共通関数
@@ -936,22 +1310,27 @@ mode-specific-map はあとから中身が入ることはないようだ。な�
 
 *** 利用中のprefix
 
-- abdghijklnpqsu
+- 未使用 ... abdghklnpqs
+- 利用中 11 ... i j z f e w m v t r o c y x u
 
-- 11 z f e w m v t r o c y x
-
-  j は jumpか japaneseか
-  jump系と 日本語入力関連がほしい
-  でもjump系は、検索といっしょかなー、機能的には。
+*** 欲しい機能
+- 前メニューへ戻れないか？ 開き直せばよい？
+- aaa
 
 *** z - システム
 #+begin_src emacs-lisp
   (on
+    ;;(define-key global-map (kbd "<muhenkan><muhenkan>")  #'my/sample)
     (my/menu-group "z" "システム")
     (my/g-menu-set "zt" "起動時間" #'emacs-init-time)
     (my/g-menu-set "zc" "設定"
       #'(lambda () (interactive) (find-file my/org-init-file-name)))
-    (my/g-menu-set "zq" "Emacs終了" #'save-buffers-kill-terminal))
+    (my/menu-group "zy" "Prefix")
+    (my/g-menu-set "zyx" "C-x" (my/dynamic-binding "C-x"))
+    (my/g-menu-set "zyh" "C-h" help-map)
+    (my/g-menu-set "zyc" "C-c" (my/dynamic-binding "C-c"))
+    (my/g-menu-set "zye" "esc" esc-map)
+    (my/g-menu-set "zz" "Emacs終了" #'save-buffers-kill-terminal))
 #+end_src
 
 *** f - ファイル
@@ -970,22 +1349,30 @@ mode-specific-map はあとから中身が入ることはないようだ。な�
     (my/g-menu-set "fw" "別名で保存" #'write-file)
     (my/g-menu-set "fx" "文字・改行コード変更" #'set-buffer-file-coding-system)
     (my/g-menu-set "fy" "コード指定して開き直す" #'revert-buffer-with-coding-system)
-    ;;(my/g-set-menu-key "fb" "FavFile" #'my/find-fav-file)
-   ;;(my/g-set-menu-key "fd" "FavDir" #'my/find-fav-dir)
+    (my/g-menu-set "fb" "FavFile" #'my/find-fav-file)
+    (my/g-menu-set "fd" "FavDir" #'my/find-fav-dir)
     (my/g-menu-set "fz" "ダミー" #'ignore))
 #+end_src
 
 *** e - 編集
 C-x ; comment-set-column
-日付挿入とか？
+
 #+begin_src emacs-lisp
   (on
+    (autoload 'my/copy-this-line "my-editcommand" nil t)
+    (autoload 'my/copy-this-word "my-editcommand" nil t)
     (my/menu-group "e" "編集")
-    ;;(my/g-set-menu-key global-map "ec" "行コピー" 'my/copy-this-line)
-    ;;(my/g-set-menu-key global-map "ew" "単語コピー" 'my/copy-this-word)
+    (my/g-menu-set "ec" "行コピー" #'my/copy-this-line)
+    (my/g-menu-set "ew" "単語コピー" #'my/copy-this-word)
     (my/g-menu-set "ed" "行削除" #'kill-whole-line)
     (my/g-menu-set "ec" "選択コメント" #'comment-dwim)
-    (my/g-menu-set "en" "ナロー" #'narrow-to-region)
+    (my/menu-group "em" "マルチカーソル")
+    (my/g-menu-set "emr" "リージョン内" #'mc/edit-lines)
+    (my/g-menu-set "emd" "dwim" #'mc/mark-all-dwim)
+    (my/menu-group "en" "ナロー")
+    (my/g-menu-set "enn" "リージョン" #'narrow-to-region)
+    (my/g-menu-set "enn" "関数" #'narrow-to-defun)
+    (my/g-menu-set "ene" "解除" #'widen)
     (my/g-menu-set "es" "文字サイズ" #'text-scale-adjust)
     (my/g-menu-set "ef" "行折返しon/off" #'toggle-truncate-lines)
     (my/g-menu-set "es" "全選択" #'mark-whole-buffer))
@@ -1020,6 +1407,19 @@ C-x + balance-window
     (my/g-menu-set "jg" "指定行へ" #'goto-line))
 #+end_src
 
+*** i - 挿入
+
+my/rsrc-date-format ... 日付設定するリスト。追加はpopでいけるか？
+
+#+begin_src emacs-lisp
+    (on
+      (my/menu-group "i" "挿入")
+      (my/g-menu-set "id" "日付" #'my/insert-date-format)
+      (my/g-menu-set "if" "ファイル" #'insert-file)
+      (my/g-menu-set "iq" "制御文字" #'quoted-insert))
+#+end_src
+
+
 *** m - キーボードマクロ
 C-x e kmacro-end-and-call-macro
 start-kbd-macro
@@ -1035,20 +1435,43 @@ insert-kbd-macro
     (my/g-menu-set "mm" "マップ" #'kmacro-keymap))
 #+end_src
 
-***  v - 表示
+*** v - 表示
 treemacs, neotree, ilist ....
 windowやbufferを利用する系。
 ファイル情報
+whitespace space,tab,ret,zspace,,,
+行番号
 #+begin_src emacs-lisp
   (on
     (my/menu-group "v" "表示")
-    (my/g-menu-set "vi" "IMenuList" #'imenu-list)
+    (my/g-menu-set "vi" "IMenuList" #'imenu-list-smart-toggle)
     (my/g-menu-set "vt" "VTerm" #'vtx)
     ;;(my/g-set-menu-key "vn" "neotree" 'neotree-toggle)
     ;;(my/g-set-menu-key "vd" "neotree dir" 'neotree-dir)
     ;;(my/g-set-menu-key "ve" "Elscreen List" 'my/ivy-elscreen)
     (my/g-menu-set "vs" "sample" #'my/sample))
 #+end_src
+
+*** ? - 機能
+- ivy,swiper,councel
+- 文字サイズは、連続で大きく、小さくしたいかな。
+#+begin_src emacs-lisp
+  (on
+    (my/menu-group "u" "機能")
+    (my/menu-group "uw" "非表示文字")
+    (my/g-menu-set "uwt" "タブ on/off" #'my/sample)
+    (my/g-menu-set "uwr" "改行 on/off" #'my/sample)
+    (my/g-menu-set "uws" "スペース on/off" #'my/sample)
+    (my/g-menu-set "uwz" "全角スペース on/off" #'my/sample)
+    (my/g-menu-set "uwe" "ファイル終端文字 on/off" #'my/sample)
+    (my/g-menu-set "ul" "行番号 on/off" #'my/sample)
+    (my/menu-group "us" "文字サイズ")
+    (my/g-menu-set "usb" "大きく" #'my/sample)
+    (my/g-menu-set "use" "標準" #'my/sample)
+    (my/g-menu-set "uss" "小さく" #'my/sample)
+    (my/g-menu-set "uc" "Compan/y on/off" #'company-mode))
+#+end_src
+
 
 *** t - 道具
 - lisp-interaction-modeの新しくバッファを開く(あればそれをアクティブに?)
@@ -1060,6 +1483,11 @@ get-buffer-create name
 kill-buffer buffer-name
 with-output-to-temp-buffer 
 
+org-capture 併用かな？
+アクセスが早いほうがいい
+emacs -
+魂の文章術 - skk 起動
+アーティストデート
 ※リファレンスに下記の記述あり
 "ユーザーにとってあまり重要でない一時的なバッファに対しては空白で始まる名 前を付ける" という慣例があります
 
@@ -1067,10 +1495,6 @@ with-output-to-temp-buffer
   (on 
     (my/menu-group "t" "道具箱")
     (my/g-menu-set "tj" "SKK" #'skk-mode)
-    (my/menu-group "tz" "Prefix")
-    (my/g-menu-set "tzx" "C-x" ctl-x-map)
-    (my/g-menu-set "tzh" "C-h" help-map)
-    (my/g-menu-set "tze" "esc" esc-map)
     (my/g-menu-set "td" "dired" #'dired)
     (my/g-menu-set "te" "ChangeLog"
       #'(lambda()
@@ -1087,6 +1511,7 @@ with-output-to-temp-buffer
       #'(lambda () (interactive) (org-capture nil "d")))
     (my/g-menu-set "rg" "今日のぼやき"
       #'(lambda () (interactive) (org-capture nil "g"))))
+  (on (defun boyaki() (interactive) (org-capture nil "g")))
 #+end_src
 
 *** x - shellコマンド実行系
@@ -1103,6 +1528,11 @@ with-output-to-temp-buffer
 道具箱に入れて階層を下げるか？ 悩ましい。
 #+begin_src emacs-lisp
   (on
+    (autoload 'yas-global-mode "yasnippet" nil t)
+    (autoload 'yas-new-snippet "yasnippet" nil t)
+    (autoload 'yas-describe-tables "yasnippet" nil t)
+    (autoload 'yas-visit-snippet-file "yasnippet" nil t)
+    (autoload 'yas-reload-all "yasnippet" nil t)
     (my/menu-group "y" "yasnippet")
     (my/g-menu-set "ys" "開始" #'yas-global-mode)
     (my/g-menu-set "yn" "新規" #'yas-new-snippet)
@@ -1115,15 +1545,22 @@ with-output-to-temp-buffer
 #+begin_src emacs-lisp
   (on
     (my/menu-group "c" "コンパイル")
+    (my/menu-group "cl" "Lispコンパイル")
+    (my/g-menu-set "cld" "一括コンパイル" #'byte-recompile-directory)
+    (my/menu-set emacs-lisp-mode-map "cc" "今のバッファコンパイル"
+      #'(lambda () (interactive)(byte-compile-file buffer-file-name)))
     (my/g-menu-set "cq" "サンプル" #'my/sample))
 #+end_src
+
+(org-babel-tangle-file my/org-init-file-name buffer-file-name)
+(byte-compile-file (my/change-ext buffer-name "el"))
 
 *** o - org-mode
 未使用キー: dgijmpruvz
 
 ※global-mapとorg-mode-mapが混在
 
--- global-map --
+◆ global-map
 #+begin_src emacs-lisp
   (on
     (my/menu-group "o" "org-mode")
@@ -1135,13 +1572,15 @@ with-output-to-temp-buffer
     )
 #+end_src
 
--- org-mode-map --
+◆ org-mode-map
+- 画像表示
 #+begin_src emacs-lisp
   (on
    (!after 'org
 
      ;;(my/set-menu-key org-mode-map "ob" "バッファ移動" #'my/org-title-list-buffer-list)
      (my/menu-set org-mode-map "ol" "store link" #'org-store-link)
+    (my/menu-set org-mode-map "cc" "org babel コンパイル" #'my/sample)
      (my/menu-set org-mode-map "ow" "copy subtree" #'org-copy-subtree)
      (my/menu-set org-mode-map "on" "narrow toggle"
        #'(lambda()(if(buffer-narrowed-p)(widen)(org-narrow-to-subtree))))
@@ -1153,10 +1592,23 @@ with-output-to-temp-buffer
      (my/menu-set org-mode-map "oo" "リンク開く" #'org-open-at-point)))
 #+end_src
 
+◆ org-capture-mode-map
+#+begin_src emacs-lisp
+  (on
+    (autoload 'org-capture-refile "org-capture" nil t)
+    (autoload 'org-capture-kill "org-capture" nil t)
+    (autoload 'org-capture-finalize "org-capture" nil t)
+    (!ewhen (require 'org-capture))
+    (!after 'org-capture
+      (my/menu-set org-capture-mode-map "ocw" "refile" #'org-capture-refile)
+      (my/menu-set org-capture-mode-map "ock" "abort" #'org-capture-kill)
+      (my/menu-set org-capture-mode-map "occ" "Finish" #'org-capture-finalize)))
+#+end_src
+
 * 最終処理
 
 #+begin_src emacs-lisp
-  (setq gc-cons-threshold 33554432)
+  ;;;(setq gc-cons-threshold 33554432)
   (setq file-name-handler-alist my-saved-file-name-handler-alist)
 #+end_src
 
@@ -1164,6 +1616,7 @@ with-output-to-temp-buffer
   (profile-proc
     (profiler-report)
     (profiler-stop))
+  (provide 'my-init)
 #+end_src
 
 --- 以上 ---------------------------------------------------------------------!

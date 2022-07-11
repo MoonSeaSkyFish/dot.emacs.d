@@ -4,8 +4,8 @@
 # --
 #+title: $1
 #+link_up: 
-#+date: 
-#+last: 
+#+date: `(format-time-string "%Y-%02m-%02dT%02H:%02M:%02SZ")` 
+#+last: `(format-time-string "%Y-%02m-%02dT%02H:%02M:%02SZ")`
 #+language: ja
 #+options: 
 #+startup: 
